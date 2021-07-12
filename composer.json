@@ -1,0 +1,18 @@
+{
+    "name": "enoffspb/bitrix-entity-manager",
+    "type": "library",
+    "license": "MIT",
+    "version": "0.0.1",
+    "authors": [
+        {
+            "name": "Ilya Pastukhov",
+            "email": "enoff.spb@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "enoffspb\\BitrixEntityManager\\": "src/"
+        }
+    }
+}
