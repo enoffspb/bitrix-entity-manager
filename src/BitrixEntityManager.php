@@ -25,13 +25,18 @@ class BitrixEntityManager implements EntityManagerInterface
      */
     public function __construct(array $config = [])
     {
+        $entitiesConfig = null;
         if(isset($config['entitiesConfig'])) {
-            $this->entitiesConfig = $config['entitiesConfig'];
+            $entitiesConfig = $config['entitiesConfig'];
             unset($config['entitiesConfig']);
         }
         $this->config = array_merge($this->defaultConfig, $config);
 
         $this->connection = Application::getConnection();
+
+        if($entitiesConfig) {
+            $this->setEntitiesConfig($entitiesConfig);
+        }
 
         if($this->config['autoloadScheme']) {
             $this->loadSchema();
@@ -103,10 +108,14 @@ class BitrixEntityManager implements EntityManagerInterface
 
         $entityConfig = $this->entitiesConfig[$entityClass] ?? null;
         if(!$entityConfig) {
-            throw new \Exception('Config for entity ' . $entityConfig . ' is not exists.');
+            throw new \Exception('Config for entity ' . $entityClass . ' is not exists.');
         }
         if(!is_array($entityConfig)) {
-            throw new \Exception('Config for entity ' . $entityConfig . ' must be an array.');
+            throw new \Exception('Config for entity ' . $entityClass . ' must be an array.');
+        }
+
+        if(!isset($entityConfig['tableClass'])) {
+            throw new \Exception('Parameter tableClass must be exists in entityConfig.');
         }
 
         $metadata = new EntityMetadata();
@@ -127,9 +136,13 @@ class BitrixEntityManager implements EntityManagerInterface
         foreach($this->entitiesConfig as $entityClass => $entityConfig) {
             $metadata = $this->getMetadata($entityClass);
 
-            $sql = "SHOW COLUMNS FROM `{$metadata->tableName}`";
-            $rows = $this->connection->query($sql)->fetchAll();
-            $metadata->createColumnsFromDescribe($rows);
+            if(isset($entityConfig['tableClass'])) {
+                $metadata->createColumnsFromTableClass($entityConfig['tableClass']);
+            } else if(isset($entityConfig['tableName'])) {
+                $sql = "SHOW COLUMNS FROM `{$metadata->tableName}`";
+                $rows = $this->connection->query($sql)->fetchAll();
+                $metadata->createColumnsFromDescribe($rows);
+            }
 
             $count++;
         }

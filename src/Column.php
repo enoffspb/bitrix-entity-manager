@@ -55,4 +55,18 @@ class Column
         $this->length = $length;
     }
 
+    public function loadFromBitrixField(\Bitrix\Main\Entity\Field $field)
+    {
+        $this->attribute = $field->getName();
+        $columnName = $field->getParameter('column_name');
+
+        if($columnName !== null) {
+            $this->name = $columnName;
+        } else {
+            $this->name = $this->attribute;
+        }
+
+        $this->nullable = !$field->getParameter('required');
+    }
+
 }
