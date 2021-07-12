@@ -11,7 +11,7 @@ use enoffspb\BitrixEntityManager\BitrixEntityManager;
 $entityManager = new BitrixEntityManager([
     'entitiesConfig' => [
         MyEntity::class => [
-            'tableName' => 'my_table_name'
+            'tableClass' => MyEntityTable::class
         ]
     ]
 ]);
