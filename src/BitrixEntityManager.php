@@ -77,7 +77,7 @@ class BitrixEntityManager implements EntityManagerInterface
         foreach($columns as $column) {
             $attribute = $column->attribute;
 
-            $fields[$column->column] = $entity->$attribute;
+            $fields[$column->name] = $entity->$attribute;
         }
 
         $pk = $metadata->primaryKey;
