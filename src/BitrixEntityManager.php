@@ -3,6 +3,7 @@
 namespace enoffspb\BitrixEntityManager;
 
 use Bitrix\Main\Application;
+use Bitrix\Main\Entity\UpdateResult;
 
 class BitrixEntityManager implements EntityManagerInterface
 {
@@ -82,6 +83,9 @@ class BitrixEntityManager implements EntityManagerInterface
 
         $pk = $metadata->primaryKey;
 
+        /**
+         * @todo Проверка успешного добавления
+         */
         $insertedId = $this->connection->add($tableName, $fields);
         if($metadata->$pk === null) {
             $entity->$pk = $insertedId;
@@ -92,7 +96,36 @@ class BitrixEntityManager implements EntityManagerInterface
 
     public function update(object $entity): bool
     {
-        throw new \Exception('TODO: Implement update() method.');
+        $metadata = $this->getMetadata(get_class($entity));
+
+        $tableName = $metadata->tableName;
+        $columns = $metadata->getMapping();
+
+        /**
+         * @TODO Обновлять только измененные поля, для этого необходимо наблюдать объект, отданный Repository
+         */
+        $fields = [];
+        $attribute = null;
+        foreach($columns as $column) {
+            $attribute = $column->attribute;
+
+            $fields[$column->name] = $entity->$attribute;
+        }
+
+        $pk = $metadata->primaryKey;
+
+        /**
+         * @var $res UpdateResult
+         */
+        $res = $metadata->tableClass::update($entity->$pk, $fields);
+        if($res->isSuccess()) {
+            return true;
+        } else {
+            /**
+             * @TODO get error and set it to error messages
+             */
+            return false;
+        }
     }
 
     public function delete(object $entity): bool
