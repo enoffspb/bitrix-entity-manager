@@ -4,10 +4,7 @@ namespace enoffspb\BitrixEntityManager;
 
 interface RepositoryInterface
 {
-    public function getById($id): ?object
-    {
-
-    }
+    public function getById($id): ?object;
 
     /**
      * @param $criteria see getList() from D7 core
