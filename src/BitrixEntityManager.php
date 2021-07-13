@@ -101,6 +101,11 @@ class BitrixEntityManager implements EntityManagerInterface
         $tableName = $metadata->tableName;
         $columns = $metadata->getMapping();
 
+        $pk = $metadata->primaryKey;
+        if($entity->$pk === null) {
+            return false;
+        }
+
         /**
          * @TODO Обновлять только измененные поля, для этого необходимо наблюдать объект, отданный Repository
          */
@@ -112,13 +117,21 @@ class BitrixEntityManager implements EntityManagerInterface
             $fields[$column->name] = $entity->$attribute;
         }
 
-        $pk = $metadata->primaryKey;
+        /**
+         * @todo См. выше, необходимо проверить, изменилось ли состояние объекта
+         */
+        $hasChanged = true;
+        if(!$hasChanged) {
+            return true;
+        }
 
         /**
          * @var $res UpdateResult
          */
         $res = $metadata->tableClass::update($entity->$pk, $fields);
-        if($res->isSuccess()) {
+        $affectedRows = $res->getAffectedRowsCount();
+
+        if($res->isSuccess() && $affectedRows > 0) {
             return true;
         } else {
             /**
