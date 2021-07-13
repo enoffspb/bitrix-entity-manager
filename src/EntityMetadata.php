@@ -34,8 +34,32 @@ class EntityMetadata
         $bxMapping =  $tableClass::getMap();
         foreach($bxMapping as $field) {
             $column = new Column();
-            $column->loadFromBitrixField($field);
+
+            $columnName = $field->getParameter('column_name');
+            $attribute = $field->getName();
+
+            if(!$columnName) {
+                $columnName = $attribute;
+            }
+
+            $attribute = $this->bxNameToAttribute($attribute);
+
+            $column->name = $columnName;
+            $column->attribute = $attribute;
+
+            $column->nullable = !$field->getParameter('required');
+
             $this->mapping[$column->name] = $column;
         }
+    }
+
+    public function bxNameToAttribute(string $str): string
+    {
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', strtolower($str)))));
+    }
+
+    public function attributeToBxName($str): string
+    {
+        return strtoupper(preg_replace('/(?<!^)[A-Z]/', '_$0', $str));
     }
 }

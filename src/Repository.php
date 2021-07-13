@@ -41,22 +41,12 @@ class Repository implements RepositoryInterface
 
         $result = [];
         while($row = $res->fetch()) {
-            foreach($row as $k => $v) {
-                $k = strtolower($k);
+            /**
+             * @todo Watch the entity
+             */
+            $entity = $this->buildEntityFromBxArray($row);
 
-                /**
-                 * @todo Приведение типов в соответствии с Column
-                 */
-
-                $entity = new $this->metadata->entityClass;
-                $entity->$k = $v;
-
-                /**
-                 * @todo Запомнить Entity
-                 */
-
-                $result[] = $entity;
-            }
+            $result[] = $entity;
         }
 
         return $result;
@@ -64,6 +54,32 @@ class Repository implements RepositoryInterface
 
     public function getById($id): ?object
     {
+        $row = $this->tableClass::getById($id);
+        if(!$row) {
+            return null;
+        }
 
+        /**
+         * @todo Watch the entity
+         */
+        $entity = $this->buildEntityFromBxArray($row);
+
+        return $entity;
+    }
+
+    protected function buildEntityFromBxArray(array $data): object
+    {
+        $entity = new $this->metadata->entityClass;
+        foreach($data as $k => $v) {
+            $attr = $this->metadata->bxNameToAttribute($k);
+
+            /**
+             * @todo Приведение типов в соответствии с Column
+             */
+
+            $entity->$attr = $v;
+        }
+
+        return $entity;
     }
 }
