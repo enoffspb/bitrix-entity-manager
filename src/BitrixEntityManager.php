@@ -3,6 +3,7 @@
 namespace enoffspb\BitrixEntityManager;
 
 use Bitrix\Main\Application;
+use Bitrix\Main\Entity\DeleteResult;
 use Bitrix\Main\Entity\UpdateResult;
 
 class BitrixEntityManager implements EntityManagerInterface
@@ -98,7 +99,6 @@ class BitrixEntityManager implements EntityManagerInterface
     {
         $metadata = $this->getMetadata(get_class($entity));
 
-        $tableName = $metadata->tableName;
         $columns = $metadata->getMapping();
 
         $pk = $metadata->primaryKey;
@@ -143,7 +143,22 @@ class BitrixEntityManager implements EntityManagerInterface
 
     public function delete(object $entity): bool
     {
-        throw new \Exception('TODO: Implement delete() method.');
+        $metadata = $this->getMetadata(get_class($entity));
+        $pk = $metadata->primaryKey;
+
+        if($entity->$pk === null) {
+            return false;
+        }
+
+        /**
+         * @var $res DeleteResult
+         */
+        $res = $metadata->tableClass::delete($entity->$pk);
+        if($res->isSuccess()) {
+            return true;
+        }
+
+        return false;
     }
 
     public function getMetadata($entityClass): EntityMetadata
