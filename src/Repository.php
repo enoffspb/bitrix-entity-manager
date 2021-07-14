@@ -54,7 +54,7 @@ class Repository implements RepositoryInterface
 
     public function getById($id): ?object
     {
-        $row = $this->tableClass::getById($id);
+        $row = $this->tableClass::getById($id)->fetch();
         if(!$row) {
             return null;
         }
