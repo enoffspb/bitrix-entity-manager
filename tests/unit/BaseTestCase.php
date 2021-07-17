@@ -2,6 +2,7 @@
 
 namespace enoffspb\BitrixEntityManager\Tests\Unit;
 
+use enoffspb\BitrixEntityManager\Tests\Entity\Example;
 use enoffspb\BitrixEntityManager\Tests\Table\ExampleTable;
 use Bitrix\Main\Application;
 
@@ -12,6 +13,12 @@ abstract class BaseTestCase extends \PHPUnit\Framework\TestCase
     ];
 
     private static \Bitrix\Main\DB\Connection $connection;
+
+    protected static $entitiesConfig = [
+        Example::class => [
+            'tableClass' => ExampleTable::class,
+        ]
+    ];
 
     public static function setUpBeforeClass(): void
     {

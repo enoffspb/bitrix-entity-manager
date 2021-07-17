@@ -23,16 +23,10 @@ class EntityManagerTest extends BaseTestCase
 
     protected $backupGlobalsBlacklist = ['DB'];
 
-    private $entitiesConfig = [
-        Example::class => [
-            'tableClass' => ExampleTable::class,
-        ]
-    ];
-
     private function createManager(array $config = [], bool $skipEntitiesConfig = false): BitrixEntityManager
     {
         if(!$skipEntitiesConfig) {
-            $config['entitiesConfig'] = $this->entitiesConfig;
+            $config['entitiesConfig'] = self::$entitiesConfig;
         }
 
         $entityManager = new BitrixEntityManager($config);
@@ -55,10 +49,10 @@ class EntityManagerTest extends BaseTestCase
             'autoloadScheme' => false,
         ], true);
 
-        $entityManager->setEntitiesConfig($this->entitiesConfig);
+        $entityManager->setEntitiesConfig(self::$entitiesConfig);
         $entitiesConfig = $entityManager->getEntitiesConfig();
 
-        $this->assertEquals($this->entitiesConfig, $entitiesConfig);
+        $this->assertEquals(self::$entitiesConfig, $entitiesConfig);
     }
 
     public function testLoadSchema()
@@ -68,7 +62,7 @@ class EntityManagerTest extends BaseTestCase
         ]);
 
         $cntTables = $entityManager->loadSchema();
-        $this->assertEquals(count($this->entitiesConfig), $cntTables);
+        $this->assertEquals(count(self::$entitiesConfig), $cntTables);
     }
 
     public function testGetMetadata()
