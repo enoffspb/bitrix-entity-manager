@@ -53,6 +53,11 @@ class BitrixEntityManager implements EntityManagerInterface
         $this->entitiesConfig = $entitiesConfig;
     }
 
+    public function getEntitiesConfig(): array
+    {
+        return $this->entitiesConfig;
+    }
+
     public function getRepository($entityClass): RepositoryInterface
     {
         if(isset($this->repositories[$entityClass])) {

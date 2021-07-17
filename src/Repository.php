@@ -10,6 +10,8 @@ class Repository implements RepositoryInterface
     private string $tableClass;
     private EntityMetadata $metadata;
 
+    private array $entitiesCache = [];
+
     public function __construct(EntityMetadata $metadata)
     {
         $this->metadata = $metadata;
@@ -59,12 +61,26 @@ class Repository implements RepositoryInterface
             return null;
         }
 
-        /**
-         * @todo Watch the entity
-         */
         $entity = $this->buildEntityFromBxArray($row);
+        if($entity) {
+            $this->attach($entity);
+        }
 
         return $entity;
+    }
+
+    public function attach(object $entity)
+    {
+        $hash = spl_object_hash($entity);
+        $this->entitiesCache[$hash] = $entity;
+    }
+
+    public function detach(object $entity)
+    {
+        $hash = spl_object_hash($entity);
+        if(isset($this->entitiesCache[$hash])) {
+            unset($this->entitiesCache[$hash]);
+        }
     }
 
     protected function buildEntityFromBxArray(array $data): object

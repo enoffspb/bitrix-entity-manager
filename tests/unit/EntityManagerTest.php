@@ -1,41 +1,45 @@
 <?php
+
+namespace enoffspb\BitrixEntityManager\Tests\Unit;
+
 use PHPUnit\Framework\TestCase;
 
 use enoffspb\BitrixEntityManager\BitrixEntityManager;
 use enoffspb\BitrixEntityManager\EntityMetadata;
 use enoffspb\BitrixEntityManager\RepositoryInterface;
 
+use enoffspb\BitrixEntityManager\Tests\Entity\Example;
+use enoffspb\BitrixEntityManager\Tests\Table\ExampleTable;
+
 /**
  * @TODO Код перенесен из другого проекта, необходимо дописать тесты и README по запуску.
  * @TODO Добавить tests/src в автозагрузку
  */
 
-use enoffspb\BitrixEntityManager\Tests\Entity\Example;
-
-class EntityManagerTest extends TestCase
+class EntityManagerTest extends BaseTestCase
 {
     // Черный список глобальных переменных, которые восстанавливаются после каждого теста
     // @see https://phpunit.readthedocs.io/ru/latest/fixtures.html
 
     protected $backupGlobalsBlacklist = ['DB'];
 
-    private function createManager(array $config = []): BitrixEntityManager
-    {
-        $entitiesConfig = [
-            Example::class => [
-                'tableName' => 'example',
-            ],
-        ];
+    private $entitiesConfig = [
+        Example::class => [
+            'tableClass' => ExampleTable::class,
+        ]
+    ];
 
-        $config['entitiesConfig'] = $entitiesConfig;
+    private function createManager(array $config = [], bool $skipEntitiesConfig = false): BitrixEntityManager
+    {
+        if(!$skipEntitiesConfig) {
+            $config['entitiesConfig'] = $this->entitiesConfig;
+        }
 
         $entityManager = new BitrixEntityManager($config);
-        $entityManager->setEntitiesConfig($entitiesConfig);
 
         return $entityManager;
     }
 
-    // Создание EntityManager
     public function testCreateManager()
     {
         $entityManager = $this->createManager([
@@ -45,6 +49,18 @@ class EntityManagerTest extends TestCase
         $this->assertInstanceOf(BitrixEntityManager::class, $entityManager);
     }
 
+    public function testSetEntitiesConfig()
+    {
+        $entityManager = $this->createManager([
+            'autoloadScheme' => false,
+        ], true);
+
+        $entityManager->setEntitiesConfig($this->entitiesConfig);
+        $entitiesConfig = $entityManager->getEntitiesConfig();
+
+        $this->assertEquals($this->entitiesConfig, $entitiesConfig);
+    }
+
     public function testLoadSchema()
     {
         $entityManager = $this->createManager([
@@ -52,7 +68,7 @@ class EntityManagerTest extends TestCase
         ]);
 
         $cntTables = $entityManager->loadSchema();
-        $this->assertGreaterThan(0, $cntTables);
+        $this->assertEquals(count($this->entitiesConfig), $cntTables);
     }
 
     public function testGetMetadata()
