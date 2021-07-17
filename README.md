@@ -15,6 +15,19 @@ $entityManager = new BitrixEntityManager([
         ]
     ]
 ]);
+
+
+// Вы можете зарегистрировать компонент через сервис-локатор в битрикс:
+
+$serviceLocator = \Bitrix\Main\DI\ServiceLocator::getInstance();
+$serviceLocator->addInstance('app.entityManager', $entityManager);
+
+// И в дальнейшем использовать в приложении
+
+/**
+* @var $entityManager BitrixEntityManager
+ */
+$entityManager = $serviceLocator->get('app.entityManager');
 ```
 
 ## Использование
@@ -39,3 +52,6 @@ $repository = $entityManager->getRepository(Entity::class);
 $entity = $repository->getById(1);
 $entities = $repository->getList(/** D7 parameters from getList() */);
 ```
+
+## Тестирование
+Тестирование при разработке описано в [tests/README.md](tests/README.md).
