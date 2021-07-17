@@ -19,7 +19,7 @@ class ExampleTable extends DataManager
             (new IntegerField('ID'))
                 ->configurePrimary()
                 ->configureAutocomplete(),
-            (new IntegerField('NAME'))
+            (new StringField('NAME'))
                 ->configureRequired(),
         ];
     }

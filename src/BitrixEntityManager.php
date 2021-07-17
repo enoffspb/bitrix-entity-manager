@@ -95,6 +95,7 @@ class BitrixEntityManager implements EntityManagerInterface
          * @todo Проверка успешного добавления
          */
         $insertedId = $this->connection->add($tableName, $fields);
+
         if(!isset($entity->$pk)) {
             $entity->$pk = $insertedId;
         }
