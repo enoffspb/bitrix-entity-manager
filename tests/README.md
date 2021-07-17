@@ -12,7 +12,7 @@
 
    
 3. Запустить тесты из директории `enoffspb/bitrix-entity-manager/tests/unit` используя представленный bootstrap-файл для PHPUnit `--bootstrap tests/bootstrap.php` 
-   и указанием дополнительного параметра `--bitrix-dir /path/to/bitrix` (укажите путь к вашему битрикс-проекту)
+   и указанием дополнительного параметра `--bitrix-dir /path/to/bitrix` или переменной окружения `BITRIX_DIR` (укажите путь к вашему битрикс-проекту)
    
    
 4. Итоговая команда для запуска:

@@ -11,8 +11,16 @@ global $argv;
 $confKey = '--bitrix-dir';
 $key = array_search($confKey, $argv);
 $bitrixRootDir = null;
-if($key === false || !($bitrixRootDir = $argv[$key + 1] ?? null)) {
-    throw new \Exception('Pass "-- --bitrix-dir=/path/to/bitrix-project" parameter to ./phpunit');
+if($key !== false) {
+    $bitrixRootDir = $argv[$key + 1] ?? null;
+}
+
+if($bitrixRootDir === null && !empty($_ENV['BITRIX_DIR'])) {
+    $bitrixRootDir = $_ENV['BITRIX_DIR'];
+}
+
+if(empty($bitrixRootDir)) {
+    throw new \Exception('Pass "-- --bitrix-dir=/path/to/bitrix-project" parameter to the end of ./phpunit call or set BITRIX_DIR env variable');
 }
 
 $_SERVER["DOCUMENT_ROOT"] = $bitrixRootDir;

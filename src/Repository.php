@@ -51,6 +51,7 @@ class Repository implements RepositoryInterface
             if(isset($this->entitiesCache[$pk])) {
                 $this->mergeEntities($this->entitiesCache[$pk], $entity);
                 $entity = $this->entitiesCache[$pk];
+                $this->storeValues($entity);
             } else {
                 $this->attach($entity);
             }
@@ -85,6 +86,8 @@ class Repository implements RepositoryInterface
         $pk = $this->metadata->primaryKey;
 
         $this->entitiesCache[$entity->$pk] = $entity;
+
+        $this->storeValues($entity);
     }
 
     public function detach(object $entity): void
@@ -93,6 +96,44 @@ class Repository implements RepositoryInterface
 
         if(isset($this->entitiesCache[$entity->$pk])) {
             unset($this->entitiesCache[$entity->$pk]);
+        }
+
+        $this->clearStoredValues($entity);
+    }
+
+    private array $storedValues = [];
+    public function storeValues(object $entity): void
+    {
+        $columns = $this->metadata->getMapping();
+        $pkField = $this->metadata->primaryKey;
+        $pk = $entity->$pkField;
+
+        $values = [];
+        foreach($columns as $column) {
+            $values[$column->attribute] = $entity->{$column->attribute};
+        }
+        $this->storedValues[$pk] = $values;
+    }
+
+    public function getStoredValues(object $entity): ?array
+    {
+        $pkField = $this->metadata->primaryKey;
+        $pk = $entity->$pkField;
+
+        if(!isset($this->storedValues[$pk])) {
+            return null;
+        }
+
+        return $this->storedValues[$pk];
+    }
+
+    public function clearStoredValues(object $entity): void
+    {
+        $pkField = $this->metadata->primaryKey;
+        $pk = $entity->$pkField;
+
+        if(isset($this->storedValues[$pk])) {
+            unset($this->storedValues[$pk]);
         }
     }
 

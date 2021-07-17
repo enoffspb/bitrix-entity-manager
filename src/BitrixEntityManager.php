@@ -117,21 +117,20 @@ class BitrixEntityManager implements EntityManagerInterface
             return false;
         }
 
-        /**
-         * @TODO Обновлять только измененные поля, для этого необходимо наблюдать объект, отданный Repository
-         */
+        $repository = $this->getRepository(get_class($entity));
+        $storedValues = $repository->getStoredValues($entity);
+
         $fields = [];
         $attribute = null;
         foreach($columns as $column) {
             $attribute = $column->attribute;
-
-            $fields[$column->name] = $entity->$attribute;
+            $value = $entity->$attribute;
+            if(!$storedValues || !isset($storedValues[$attribute]) || $storedValues[$attribute] !== $value) {
+                $fields[$column->name] = $value;
+            }
         }
 
-        /**
-         * @todo См. выше, необходимо проверить, изменилось ли состояние объекта
-         */
-        $hasChanged = true;
+        $hasChanged = !empty($fields);
         if(!$hasChanged) {
             return true;
         }
@@ -143,6 +142,7 @@ class BitrixEntityManager implements EntityManagerInterface
         $affectedRows = $res->getAffectedRowsCount();
 
         if($res->isSuccess() && $affectedRows > 0) {
+            $repository->storeValues($entity);
             return true;
         } else {
             /**
@@ -166,7 +166,7 @@ class BitrixEntityManager implements EntityManagerInterface
          */
         $res = $metadata->tableClass::delete($entity->$pk);
         if($res->isSuccess()) {
-            $this->getRepository(get_class($entity))->detach();
+            $this->getRepository(get_class($entity))->detach($entity);
             return true;
         }
 

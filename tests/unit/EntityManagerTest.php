@@ -9,12 +9,6 @@ use enoffspb\BitrixEntityManager\EntityMetadata;
 use enoffspb\BitrixEntityManager\RepositoryInterface;
 
 use enoffspb\BitrixEntityManager\Tests\Entity\Example;
-use enoffspb\BitrixEntityManager\Tests\Table\ExampleTable;
-
-/**
- * @TODO Код перенесен из другого проекта, необходимо дописать тесты и README по запуску.
- * @TODO Добавить tests/src в автозагрузку
- */
 
 class EntityManagerTest extends BaseTestCase
 {
@@ -84,6 +78,43 @@ class EntityManagerTest extends BaseTestCase
         $this->assertTrue($res);
 
         $this->assertNotNull($example->id);
+    }
+
+    public function testUpdateEntity()
+    {
+        $entityManager = $this->createManager();
+        $entities = $entityManager->getRepository(Example::class)->getList();
+        $entity = $entities[0];
+        if(!$entity) {
+            throw new \Exception('Example entity is not found.');
+        }
+
+        $entity->name = 'new name';
+        $res = $entityManager->update($entity);
+        $this->assertTrue($res);
+
+        // Повторное обновление сущности без изменений
+        $res = $entityManager->update($entity);
+        $this->assertTrue($res);
+    }
+
+    public function testDeleteEntity()
+    {
+        $entityManager = $this->createManager();
+        $repository = $entityManager->getRepository(Example::class);
+        $entities = $repository->getList();
+        $entity = $entities[0];
+        if(!$entity) {
+            throw new \Exception('Example entity is not found.');
+        }
+
+        $id = $entity->id;
+
+        $res = $entityManager->delete($entity);
+        $this->assertTrue($res);
+
+        $removedEntity = $repository->getById($id);
+        $this->assertNull($removedEntity);
     }
 
     public function testGetRepository()
