@@ -108,5 +108,12 @@ class EntityManagerTest extends BaseTestCase
         $entities = $repository->getList();
 
         $this->assertTrue(count($entities) > 0);
+
+        /**
+         * @var $entity Example
+         */
+        $entity = $entities[0];
+        $this->assertIsInt($entity->id);
+        $this->assertEquals('entity name', $entity->name);
     }
 }
