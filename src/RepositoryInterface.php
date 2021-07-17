@@ -11,4 +11,7 @@ interface RepositoryInterface
      * @return array|null
      */
     public function getList(array $criteria = []): ?array;
+
+    public function attach(object $entity): void;
+    public function detach(object $entity): void;
 }

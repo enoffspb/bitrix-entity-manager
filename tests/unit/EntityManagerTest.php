@@ -92,22 +92,8 @@ class EntityManagerTest extends BaseTestCase
         $repository = $entityManager->getRepository(Example::class);
 
         $this->assertInstanceOf(RepositoryInterface::class, $repository);
-    }
 
-    public function testRepository()
-    {
-        $entityManager = $this->createManager();
-        $repository = $entityManager->getRepository(Example::class);
-
-        $entities = $repository->getList();
-
-        $this->assertTrue(count($entities) > 0);
-
-        /**
-         * @var $entity Example
-         */
-        $entity = $entities[0];
-        $this->assertIsInt($entity->id);
-        $this->assertEquals('entity name', $entity->name);
+        $sameRepository = $entityManager->getRepository(Example::class);
+        $this->assertSame($sameRepository, $repository);
     }
 }

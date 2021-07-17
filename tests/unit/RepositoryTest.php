@@ -38,23 +38,44 @@ class RepositoryTest extends BaseTestCase
         $this->assertEquals($entity->id, 1);
         $this->assertEquals($entity->name, 'entity name');
 
+        $sameEntity = $repository->getById($entityId);
+        $this->assertSame($sameEntity, $entity);
+
         $entityId = -1;
         $nonExistsEntity = $repository->getById($entityId);
         $this->assertNull($nonExistsEntity);
     }
 
+    public function testGetList()
+    {
+        $entityManager = $this->createManager();
+        $repository = $entityManager->getRepository(Example::class);
+
+        $entities = $repository->getList();
+        $this->assertEquals(count(self::$fixtures), count($entities));
+
+        $firstEntity = $entities[0];
+
+        $entities = $repository->getList();
+        $secondEntity = $entities[0];
+
+        $this->assertSame($firstEntity, $secondEntity);
+    }
+
+    private static $fixtures = [
+        [
+            'ID' => 1,
+            'NAME' => 'entity name'
+        ]
+    ];
+
     private static function loadFixtures()
     {
-        $examples = [
-            [
-                'ID' => 1,
-                'NAME' => 'entity name'
-            ]
-        ];
+        $examples = self::$fixtures;
 
         foreach($examples as $fields) {
-            $insertId = self::$connection->add(ExampleTable::getTableName(), $fields);
-            if(!$insertId) {
+            $insertedId = self::$connection->add(ExampleTable::getTableName(), $fields);
+            if(!$insertedId) {
                 throw new \Exception('Cannot save example fields');
             }
         }

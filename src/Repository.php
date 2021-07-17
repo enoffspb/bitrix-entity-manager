@@ -41,12 +41,19 @@ class Repository implements RepositoryInterface
     {
         $res = $this->tableClass::getList($criteria);
 
+        $pkField = $this->metadata->primaryKey;
+
         $result = [];
         while($row = $res->fetch()) {
-            /**
-             * @todo Watch the entity
-             */
             $entity = $this->buildEntityFromBxArray($row);
+
+            $pk = $entity->$pkField;
+            if(isset($this->entitiesCache[$pk])) {
+                $this->mergeEntities($this->entitiesCache[$pk], $entity);
+                $entity = $this->entitiesCache[$pk];
+            } else {
+                $this->attach($entity);
+            }
 
             $result[] = $entity;
         }
@@ -56,6 +63,10 @@ class Repository implements RepositoryInterface
 
     public function getById($id): ?object
     {
+        if(isset($this->entitiesCache[$id])) {
+            return $this->entitiesCache[$id];
+        }
+
         $row = $this->tableClass::getById($id)->fetch();
         if(!$row) {
             return null;
@@ -69,17 +80,19 @@ class Repository implements RepositoryInterface
         return $entity;
     }
 
-    public function attach(object $entity)
+    public function attach(object $entity): void
     {
-        $hash = spl_object_hash($entity);
-        $this->entitiesCache[$hash] = $entity;
+        $pk = $this->metadata->primaryKey;
+
+        $this->entitiesCache[$entity->$pk] = $entity;
     }
 
-    public function detach(object $entity)
+    public function detach(object $entity): void
     {
-        $hash = spl_object_hash($entity);
-        if(isset($this->entitiesCache[$hash])) {
-            unset($this->entitiesCache[$hash]);
+        $pk = $this->metadata->primaryKey;
+
+        if(isset($this->entitiesCache[$entity->$pk])) {
+            unset($this->entitiesCache[$entity->$pk]);
         }
     }
 
@@ -97,5 +110,14 @@ class Repository implements RepositoryInterface
         }
 
         return $entity;
+    }
+
+    protected function mergeEntities(object &$object, object $newestObject)
+    {
+        $columns = $this->metadata->getMapping();
+        foreach($columns as $column) {
+            $attr = $column->attribute;
+            $object->$attr = $newestObject->$attr;
+        }
     }
 }

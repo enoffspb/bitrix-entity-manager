@@ -91,14 +91,17 @@ class BitrixEntityManager implements EntityManagerInterface
 
         $pk = $metadata->primaryKey;
 
-        /**
-         * @todo Проверка успешного добавления
-         */
         $insertedId = $this->connection->add($tableName, $fields);
+        if(!$insertedId) {
+            return false;
+        }
 
         if(!isset($entity->$pk)) {
             $entity->$pk = $insertedId;
         }
+
+        $repository = $this->getRepository(get_class($entity));
+        $repository->attach($entity);
 
         return true;
     }
@@ -163,6 +166,7 @@ class BitrixEntityManager implements EntityManagerInterface
          */
         $res = $metadata->tableClass::delete($entity->$pk);
         if($res->isSuccess()) {
+            $this->getRepository(get_class($entity))->detach();
             return true;
         }
 
