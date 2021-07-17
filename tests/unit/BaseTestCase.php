@@ -12,7 +12,7 @@ abstract class BaseTestCase extends \PHPUnit\Framework\TestCase
         ExampleTable::class
     ];
 
-    private static \Bitrix\Main\DB\Connection $connection;
+    protected static \Bitrix\Main\DB\Connection $connection;
 
     protected static $entitiesConfig = [
         Example::class => [
