@@ -84,7 +84,9 @@ class BitrixEntityManager implements EntityManagerInterface
         foreach($columns as $column) {
             $attribute = $column->attribute;
 
-            $fields[$column->name] = $entity->$attribute;
+            if(isset($entity->$attribute)) {
+                $fields[$column->name] = $entity->$attribute;
+            }
         }
 
         $pk = $metadata->primaryKey;
@@ -93,7 +95,7 @@ class BitrixEntityManager implements EntityManagerInterface
          * @todo Проверка успешного добавления
          */
         $insertedId = $this->connection->add($tableName, $fields);
-        if($metadata->$pk === null) {
+        if(!isset($entity->$pk)) {
             $entity->$pk = $insertedId;
         }
 
