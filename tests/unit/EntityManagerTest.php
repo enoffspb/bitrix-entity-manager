@@ -73,6 +73,7 @@ class EntityManagerTest extends BaseTestCase
 
         $example = new Example();
         $example->name = 'entity name';
+        $example->nullable = null;
 
         $res = $entityManager->save($example);
         $this->assertTrue($res);
@@ -94,6 +95,28 @@ class EntityManagerTest extends BaseTestCase
         $this->assertTrue($res);
 
         // Повторное обновление сущности без изменений
+        $res = $entityManager->update($entity);
+        $this->assertTrue($res);
+
+        // Изменение null на not null
+        $entity->nullable = 'not null';
+        $res = $entityManager->update($entity);
+        $this->assertTrue($res);
+    }
+
+    public function testUpdateEntityFromRepo()
+    {
+        $entityManager = $this->createManager();
+        $entities = $entityManager->getRepository(Example::class)->getList();
+        $entity = $entities[0];
+        if(!$entity) {
+            throw new \Exception('Example entity is not found.');
+        }
+
+        $entity->name = 'another name';
+        $res = $entityManager->update($entity);
+        $this->assertTrue($res);
+
         $res = $entityManager->update($entity);
         $this->assertTrue($res);
     }

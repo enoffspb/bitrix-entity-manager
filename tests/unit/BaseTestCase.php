@@ -45,6 +45,13 @@ abstract class BaseTestCase extends \PHPUnit\Framework\TestCase
                 self::$connection->queryExecute($sql);
             }
         }
+
+        $queries = [
+            'ALTER TABLE `' . ExampleTable::getTableName() . '` MODIFY COLUMN `NULLABLE` VARCHAR(255) NULL'
+        ];
+        foreach($queries as $sql) {
+            self::$connection->queryExecute($sql);
+        }
     }
 
     private static function dropTables()

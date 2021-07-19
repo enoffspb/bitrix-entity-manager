@@ -125,7 +125,7 @@ class BitrixEntityManager implements EntityManagerInterface
         foreach($columns as $column) {
             $attribute = $column->attribute;
             $value = $entity->$attribute;
-            if(!$storedValues || !isset($storedValues[$attribute]) || $storedValues[$attribute] !== $value) {
+            if(!$storedValues || !array_key_exists($attribute, $storedValues) || $storedValues[$attribute] !== $value) {
                 $fields[$column->name] = $value;
             }
         }

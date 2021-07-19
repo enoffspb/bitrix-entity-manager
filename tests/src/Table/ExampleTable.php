@@ -21,6 +21,7 @@ class ExampleTable extends DataManager
                 ->configureAutocomplete(),
             (new StringField('NAME'))
                 ->configureRequired(),
+            (new StringField('NULLABLE'))
         ];
     }
 }
