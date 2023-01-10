@@ -22,13 +22,13 @@ class BitrixEntityManager implements EntityManagerInterface
     /**
      * BitrixEntityManager constructor.
      * @param array $config
-     * @param bool $config['autoloadScheme']
-     * @param bool $config['entitiesConfig'] see setEntitiesConfig() description
+     * @param bool $config ['autoloadScheme']
+     * @param bool $config ['entitiesConfig'] see setEntitiesConfig() description
      */
     public function __construct(array $config = [])
     {
         $entitiesConfig = null;
-        if(isset($config['entitiesConfig'])) {
+        if (isset($config['entitiesConfig'])) {
             $entitiesConfig = $config['entitiesConfig'];
             unset($config['entitiesConfig']);
         }
@@ -36,11 +36,11 @@ class BitrixEntityManager implements EntityManagerInterface
 
         $this->connection = Application::getConnection();
 
-        if($entitiesConfig) {
+        if ($entitiesConfig) {
             $this->setEntitiesConfig($entitiesConfig);
         }
 
-        if($this->config['autoloadScheme']) {
+        if ($this->config['autoloadScheme']) {
             $this->loadSchema();
         }
     }
@@ -60,7 +60,7 @@ class BitrixEntityManager implements EntityManagerInterface
 
     public function getRepository($entityClass): RepositoryInterface
     {
-        if(isset($this->repositories[$entityClass])) {
+        if (isset($this->repositories[$entityClass])) {
             return $this->repositories[$entityClass];
         }
 
@@ -76,27 +76,29 @@ class BitrixEntityManager implements EntityManagerInterface
     {
         $metadata = $this->getMetadata(get_class($entity));
 
-        $tableName = $metadata->tableName;
         $columns = $metadata->getMapping();
 
         $fields = [];
-        $attribute = null;
-        foreach($columns as $column) {
+
+        foreach ($columns as $column) {
             $attribute = $column->attribute;
 
-            if(isset($entity->$attribute)) {
+            if (isset($entity->$attribute)) {
                 $fields[$column->name] = $entity->$attribute;
             }
         }
 
         $pk = $metadata->primaryKey;
 
-        $insertedId = $this->connection->add($tableName, $fields);
-        if(!$insertedId) {
+        $result = $metadata->tableClass::add($fields);
+
+        if (!$result->isSuccess()) {
             return false;
         }
 
-        if(!isset($entity->$pk)) {
+        $insertedId = $result->getId();
+
+        if (!isset($entity->$pk)) {
             $entity->$pk = $insertedId;
         }
 
@@ -113,7 +115,7 @@ class BitrixEntityManager implements EntityManagerInterface
         $columns = $metadata->getMapping();
 
         $pk = $metadata->primaryKey;
-        if($entity->$pk === null) {
+        if ($entity->$pk === null) {
             return false;
         }
 
@@ -122,16 +124,16 @@ class BitrixEntityManager implements EntityManagerInterface
 
         $fields = [];
         $attribute = null;
-        foreach($columns as $column) {
+        foreach ($columns as $column) {
             $attribute = $column->attribute;
             $value = $entity->$attribute;
-            if(!$storedValues || !array_key_exists($attribute, $storedValues) || $storedValues[$attribute] !== $value) {
+            if (!$storedValues || !array_key_exists($attribute, $storedValues) || $storedValues[$attribute] !== $value) {
                 $fields[$column->name] = $value;
             }
         }
 
         $hasChanged = !empty($fields);
-        if(!$hasChanged) {
+        if (!$hasChanged) {
             return true;
         }
 
@@ -141,7 +143,7 @@ class BitrixEntityManager implements EntityManagerInterface
         $res = $metadata->tableClass::update($entity->$pk, $fields);
         $affectedRows = $res->getAffectedRowsCount();
 
-        if($res->isSuccess() && $affectedRows > 0) {
+        if ($res->isSuccess() && $affectedRows > 0) {
             $repository->storeValues($entity);
             return true;
         } else {
@@ -157,7 +159,7 @@ class BitrixEntityManager implements EntityManagerInterface
         $metadata = $this->getMetadata(get_class($entity));
         $pk = $metadata->primaryKey;
 
-        if($entity->$pk === null) {
+        if ($entity->$pk === null) {
             return false;
         }
 
@@ -165,7 +167,7 @@ class BitrixEntityManager implements EntityManagerInterface
          * @var $res DeleteResult
          */
         $res = $metadata->tableClass::delete($entity->$pk);
-        if($res->isSuccess()) {
+        if ($res->isSuccess()) {
             $this->getRepository(get_class($entity))->detach($entity);
             return true;
         }
@@ -175,25 +177,25 @@ class BitrixEntityManager implements EntityManagerInterface
 
     public function getMetadata($entityClass): EntityMetadata
     {
-        if(isset($this->metaDatas[$entityClass])) {
+        if (isset($this->metaDatas[$entityClass])) {
             return $this->metaDatas[$entityClass];
         }
 
         $entityConfig = $this->entitiesConfig[$entityClass] ?? null;
-        if(!$entityConfig) {
+        if (!$entityConfig) {
             throw new \Exception('Config for entity ' . $entityClass . ' is not exists.');
         }
-        if(!is_array($entityConfig)) {
+        if (!is_array($entityConfig)) {
             throw new \Exception('Config for entity ' . $entityClass . ' must be an array.');
         }
 
-        if(!isset($entityConfig['tableClass'])) {
+        if (!isset($entityConfig['tableClass'])) {
             throw new \Exception('Parameter tableClass must be exists in entityConfig.');
         }
 
         $metadata = new EntityMetadata();
         $metadata->entityClass = $entityClass;
-        foreach($entityConfig as $k => $v) {
+        foreach ($entityConfig as $k => $v) {
             $metadata->$k = $v;
         }
 
@@ -206,12 +208,12 @@ class BitrixEntityManager implements EntityManagerInterface
     {
         $count = 0;
 
-        foreach($this->entitiesConfig as $entityClass => $entityConfig) {
+        foreach ($this->entitiesConfig as $entityClass => $entityConfig) {
             $metadata = $this->getMetadata($entityClass);
 
-            if(isset($entityConfig['tableClass'])) {
+            if (isset($entityConfig['tableClass'])) {
                 $metadata->createColumnsFromTableClass($entityConfig['tableClass']);
-            } else if(isset($entityConfig['tableName'])) {
+            } else if (isset($entityConfig['tableName'])) {
                 $sql = "SHOW COLUMNS FROM `{$metadata->tableName}`";
                 $rows = $this->connection->query($sql)->fetchAll();
                 $metadata->createColumnsFromDescribe($rows);
